@@ -1,5 +1,4 @@
 import React, { Component } from "react";
-import SimpleStorageContract from "./contracts/SimpleStorage.json";
 import PostFactoryContract from "./contracts/PostFactory";
 import getWeb3 from "./getWeb3";
 
@@ -12,16 +11,21 @@ class App extends Component {
     try {
       // Get network provider and web3 instance.
       const web3 = await getWeb3();
+        // web3.eth.sendTransaction({
+        //     from:web3.eth.getCoinbase(),
+        //     to: '0x299814032451fAA008C01744d2973F8800aa59EC',
+        //     value: web3.utils.toWei('10', 'ether')
+        // })
+
 
       // Use web3 to get the user's accounts.
       const accounts = await web3.eth.getAccounts();
 
       // Get the contract instance.
       const networkId = await web3.eth.net.getId();
-      const deployedNetwork = SimpleStorageContract.networks[networkId];
+      const deployedNetwork = PostFactoryContract.networks[networkId];
       const instance = new web3.eth.Contract(
-        [SimpleStorageContract.abi,
-        PostFactoryContract.abi],
+        PostFactoryContract.abi,
         deployedNetwork && deployedNetwork.address,
       );
 
@@ -43,20 +47,36 @@ class App extends Component {
     console.log(accounts)
     console.log(contract.methods)
     // Stores a given value, 5 by default.
-    await contract.methods.set(5).send({ from: accounts[0] });
+    // await contract.methods.set(5).send({ from: accounts[0] });
+    // // Get the value from the contract to prove it worked.
+    // const response = await contract.methods.get().call();
 
-    console.log(contract)
+    const response = await contract.methods.testGet().call()
+    console.log(response)
 
-    // Get the value from the contract to prove it worked.
-    const response = await contract.methods.get().call();
+    contract.methods.test().send({from: accounts[0]})
+        .then(() => {
+          console.log("test put success")
+          return contract.methods.getPosts().call()
+        })
+        .then((result) => {
+          console.log("got here")
+          console.log(result)
+          this.setState({ posts: result})
+        })
 
+    // contract.methods.getPosts().call()
+    //     .then((result) => {
+    //       console.log(result)
+    //       this.setState({ posts: result})
+    //     })
     //let us test some endpoints
-    const response1 = await contract.methods.getPosts().all()
+    //   const response = await contract.methods.getPosts().call()
 
-    console.log(response1)
+    // console.log(response)
 
     // Update state with the result.
-    this.setState({ storageValue: response });
+    // this.setState({ posts: 'yeet' });
   };
 
   render() {
@@ -75,7 +95,7 @@ class App extends Component {
         <p>
           Try changing the value stored on <strong>line 40</strong> of App.js.
         </p>
-        <div>The stored value is: {this.state.storageValue}</div>
+        <div>The stored value is: {this.state.posts}</div>
       </div>
     );
   }

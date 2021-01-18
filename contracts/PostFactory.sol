@@ -4,6 +4,7 @@ pragma experimental ABIEncoderV2;
 import "@openzeppelin/contracts/access/Ownable.sol";
 
 contract PostFactory is Ownable {
+    event voteCast(address client, uint hit);
 
     struct Post {
         string name;
@@ -19,6 +20,7 @@ contract PostFactory is Ownable {
 
     function SurveyFactory() public {
         posts.push(Post("dummy", "dummy", 0, 0));
+        emit voteCast(msg.sender, 1);
 
     }
 
@@ -33,6 +35,15 @@ contract PostFactory is Ownable {
         }
         postToOwner[id] = msg.sender;
         ownerPostCount[msg.sender]++;
+    }
+
+    function test() public {
+        posts.push(Post("dummy1", "dummy1", 0, 0));
+        emit voteCast(msg.sender, 2);
+    }
+
+    function testGet() external view returns(string memory) {
+        return "wow";
     }
 
     function getPosts() external view returns(Post[] memory){
